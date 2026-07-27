@@ -1,58 +1,108 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# UniMart — Foundation Layer
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+This is pass 1 of the UniMart MVP: the **sync backbone**. Nothing here has a UI —
+it's the schema, models, and real-time plumbing that the Admin Dashboard,
+Storefront, and POS modules will all sit on top of in later passes.
 
-## About Laravel
+## How the pieces fit together
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
-
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
-
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
-
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
-
-```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+```
+Admin edits stock  ─┐
+Online checkout    ─┼──▶ Product::sell() / restock()  (DB transaction + row lock)
+POS "Pay & Complete"─┘              │
+                                     ▼
+                          Product model saved
+                                     │
+                                     ▼
+                       ProductObserver::updated()
+                     (fires only if stock_quantity changed)
+                                     │
+                                     ▼
+                       event(new StockUpdated($product))
+                                     │
+                                     ▼
+                    Broadcast on public channel "inventory"
+                          event name: "stock.updated"
+                                     │
+                     ┌───────────────┼───────────────┐
+                     ▼               ▼                ▼
+              Storefront        POS terminal    Admin dashboard
+           Livewire component  Livewire component  Livewire component
+           (Echo.channel       (Echo.channel        (Echo.channel
+            .listen)            .listen)              .listen)
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+The key design decision: **every stock-changing action funnels through
+`Product::sell()` / `Product::restock()`**, not direct `$product->update()`
+calls scattered across the checkout controller and the POS controller. That's
+what makes the "no overselling" guarantee real — `lockForUpdate()` inside a
+`DB::transaction()` means if an online sale and a POS sale hit the same
+product in the same instant, the second one to acquire the row lock sees the
+already-decremented stock and fails cleanly with `InsufficientStockException`
+instead of both succeeding and taking stock negative.
 
-## Contributing
+The Observer, not the controllers, is what fires `StockUpdated`. That means
+**any** path that changes stock — including a plain admin inline edit — gets
+broadcast automatically, with zero risk of a future developer adding a new
+"sell" code path and forgetting to wire up the event.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## Files in this pass
 
-## Code of Conduct
+| File | Purpose |
+|---|---|
+| `database/migrations/*` | products, users (+role), orders, order_product |
+| `app/Models/Product.php` | `sell()` / `restock()` — the concurrency-safe stock choke point |
+| `app/Models/Order.php`, `User.php` | Relationships + order number generator |
+| `app/Exceptions/InsufficientStockException.php` | Thrown by `sell()` on oversell attempt |
+| `app/Events/StockUpdated.php` | Broadcasts new stock level to everyone listening |
+| `app/Events/OrderPlaced.php` | Broadcasts "a sale happened" (powers the POS new-order sound later) |
+| `app/Observers/ProductObserver.php` | Watches Product, fires `StockUpdated` |
+| `app/Providers/AppServiceProvider.php` | Registers the observer |
+| `routes/channels.php` | Documents that inventory/orders are public channels |
+| `resources/js/echo.js` | Frontend Echo client, ready for Livewire components to `Echo.channel(...).listen(...)` |
+| `.env.broadcasting.example` | Env vars for Reverb |
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## Design choices worth knowing about (small deviations from the brief)
 
-## Security Vulnerabilities
+- **Money stored as integer cents** (`price_cents`, not `price` decimal). This
+  avoids float rounding bugs that decimal columns *can* still hit depending
+  on driver/casting. `Product::price` accessor formats it back to `"12.99"`
+  for display, so nothing above the model layer needs to know about cents.
+- **`order_product.product_id` restricts on delete**, not cascades — combined
+  with soft-deletes on `products`, a "deactivated" product's historical sales
+  rows are permanently safe even if someone force-deletes it later.
+- **`orders.cashier_id`** added (nullable, only set when `source = pos`) so
+  the Daily Sales Summary stretch goal can break down revenue by cashier for
+  free later.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## Wiring this into a real Laravel project
 
-## License
+```bash
+composer create-project laravel/laravel unimart
+cd unimart
+composer require laravel/reverb
+php artisan reverb:install        # generates REVERB_APP_* keys in .env
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+npm install laravel-echo pusher-js
+```
+
+Then copy this pass's files into place (same relative paths), append
+`.env.broadcasting.example` into your real `.env`, add
+`import './echo';` to `resources/js/app.js`, and:
+
+```bash
+php artisan migrate
+php artisan reverb:start   # run alongside `php artisan serve`
+```
+
+## Next passes
+
+1. **Admin Dashboard** — Livewire CRUD table (search + inline edit) built on
+   `Product::sell()`/`restock()` and `#[On('echo:inventory,stock.updated')]`.
+2. **Storefront** — homepage grid, cart, checkout → calls `Product::sell()`
+   per line item inside one transaction, dispatches `OrderPlaced`.
+3. **POS terminal** — category grid, keypad cart, same `sell()` call, tagged
+   `source: 'pos'`.
+4. Queued receipt emails, mock shipping API, barcode scanning, sales summary.
+
+Say the word when you want the next pass.
