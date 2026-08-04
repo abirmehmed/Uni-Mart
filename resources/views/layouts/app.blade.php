@@ -13,10 +13,28 @@
         <div class="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
             <div class="flex items-center gap-4 font-mono text-sm">
                 <a href="{{ route('storefront.home') }}" wire:navigate class="font-semibold text-slate-900">UniMart</a>
-                <a href="{{ route('admin.products') }}" wire:navigate class="text-slate-400 hover:text-slate-600">admin</a>
-                <a href="{{ route('pos.terminal') }}" wire:navigate class="text-slate-400 hover:text-slate-600">POS</a>
+
+                @auth
+                    @if (auth()->user()->role === 'admin')
+                        <a href="{{ route('admin.products') }}" wire:navigate class="text-slate-400 hover:text-slate-600">admin</a>
+                    @endif
+                    <a href="{{ route('pos.terminal') }}" wire:navigate class="text-slate-400 hover:text-slate-600">POS</a>
+                @endauth
             </div>
-            <span class="text-xs text-slate-400">inventory syncs live across storefront &amp; POS</span>
+
+            <div class="flex items-center gap-4 text-xs text-slate-400">
+                <span>inventory syncs live across storefront &amp; POS</span>
+                @auth
+                    <span class="text-slate-300">|</span>
+                    <span>{{ auth()->user()->name }} <span class="text-slate-300">({{ auth()->user()->role }})</span></span>
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="text-indigo-600 hover:text-indigo-500">Log out</button>
+                    </form>
+                @else
+                    <a href="{{ route('login') }}" wire:navigate class="text-indigo-600 hover:text-indigo-500">Staff login</a>
+                @endauth
+            </div>
         </div>
     </nav>
 
