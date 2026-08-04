@@ -91,7 +91,7 @@ path and forgetting to wire up the event.
 ## Getting started
 
 ```bash
-git clone <your-repo-url> unimart
+git clone https://github.com/abirmehmed/Uni-Mart
 cd unimart
 composer install
 npm install
