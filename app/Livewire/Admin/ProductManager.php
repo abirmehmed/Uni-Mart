@@ -31,7 +31,7 @@ class ProductManager extends Component
         $this->resetPage();
     }
 
-    #[On('echo:inventory,stock.updated')]
+    #[On('echo:inventory,.stock.updated')]
     public function onStockBroadcast(): void
     {
         //

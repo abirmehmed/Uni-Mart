@@ -25,7 +25,7 @@ class Terminal extends Component
 
     public string $lookupSearch = '';
 
-    #[On('echo:inventory,stock.updated')]
+    #[On('echo:inventory,.stock.updated')]
     public function onStockBroadcast(): void
     {
         //

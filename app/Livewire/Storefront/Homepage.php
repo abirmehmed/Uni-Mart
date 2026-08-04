@@ -26,7 +26,7 @@ class Homepage extends Component
      * the POS terminal or another browser tab shows up here instantly,
      * same mechanism as the Admin Dashboard.
      */
-    #[On('echo:inventory,stock.updated')]
+    #[On('echo:inventory,.stock.updated')]
     public function onStockBroadcast(): void
     {
         //
