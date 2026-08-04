@@ -4,35 +4,63 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>UniMart</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        steel: '#EEF0EF',
+                        ink: '#14181A',
+                        amber: { DEFAULT: '#E8A33D', dark: '#C97F1F' },
+                        ledger: '#4C7A5E',
+                        stamp: '#C4432B',
+                    },
+                    fontFamily: {
+                        display: ['"Barlow Semi Condensed"', 'sans-serif'],
+                        sans: ['"IBM Plex Sans"', 'sans-serif'],
+                        mono: ['"IBM Plex Mono"', 'monospace'],
+                    },
+                },
+            },
+        }
+    </script>
+
     @livewireStyles
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="bg-slate-50 text-slate-900 antialiased">
-    <nav class="border-b border-slate-200 bg-white">
+<body class="bg-steel font-sans text-ink antialiased">
+    <nav class="border-b border-ink/10 bg-white">
         <div class="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-            <div class="flex items-center gap-4 font-mono text-sm">
-                <a href="{{ route('storefront.home') }}" wire:navigate class="font-semibold text-slate-900">UniMart</a>
+            <div class="flex items-center gap-6">
+                <a href="{{ route('storefront.home') }}" wire:navigate class="font-display text-xl font-bold uppercase tracking-wide text-ink">
+                    UniMart
+                </a>
 
                 @auth
                     @if (auth()->user()->role === 'admin')
-                        <a href="{{ route('admin.products') }}" wire:navigate class="text-slate-400 hover:text-slate-600">admin</a>
+                        <a href="{{ route('admin.products') }}" wire:navigate class="font-mono text-xs uppercase tracking-wide text-ink/40 hover:text-ink">Admin</a>
                     @endif
-                    <a href="{{ route('pos.terminal') }}" wire:navigate class="text-slate-400 hover:text-slate-600">POS</a>
+                    <a href="{{ route('pos.terminal') }}" wire:navigate class="font-mono text-xs uppercase tracking-wide text-ink/40 hover:text-ink">POS</a>
                 @endauth
             </div>
 
-            <div class="flex items-center gap-4 text-xs text-slate-400">
-                <span>inventory syncs live across storefront &amp; POS</span>
+            <div class="flex items-center gap-4 font-mono text-[11px] uppercase tracking-wide text-ink/40">
+                <span>Inventory synced live</span>
                 @auth
-                    <span class="text-slate-300">|</span>
-                    <span>{{ auth()->user()->name }} <span class="text-slate-300">({{ auth()->user()->role }})</span></span>
+                    <span class="text-ink/20">/</span>
+                    <span>{{ auth()->user()->name }} ({{ auth()->user()->role }})</span>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
-                        <button type="submit" class="text-indigo-600 hover:text-indigo-500">Log out</button>
+                        <button type="submit" class="text-amber-dark hover:text-ink">Log out</button>
                     </form>
                 @else
-                    <a href="{{ route('login') }}" wire:navigate class="text-indigo-600 hover:text-indigo-500">Staff login</a>
+                    <a href="{{ route('login') }}" wire:navigate class="text-amber-dark hover:text-ink">Staff login</a>
                 @endauth
             </div>
         </div>
