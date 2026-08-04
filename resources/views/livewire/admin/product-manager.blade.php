@@ -1,4 +1,6 @@
 <div>
+    <livewire:admin.daily-sales-summary />
+
     <div class="mb-6 flex items-center justify-between">
         <div>
             <h1 class="text-xl font-semibold text-slate-900">Products</h1>

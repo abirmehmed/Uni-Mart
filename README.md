@@ -1,81 +1,175 @@
-# UniMart — Storefront (Pass 3)
+# UniMart — Unified POS & E-Commerce Platform
 
-Homepage product grid, session-backed Livewire cart, and checkout that sells
-through the same `Product::sell()` choke point as the Admin Dashboard —
-so an online sale is guaranteed just as oversell-proof as an admin edit.
+A full-stack Laravel MVP where a single database drives three synchronized
+storefronts: a public **online shop**, an **admin dashboard**, and a
+tablet-optimized **POS terminal** — all updating each other in real time,
+with zero page refreshes.
 
-## Files in this pass
+> Sell an item at the register, and the website's stock count changes
+> instantly. Edit a price in the admin panel, and the cashier's screen
+> updates mid-sale. That's the whole point of this project.
 
-| File | Purpose |
-|---|---|
-| `app/Livewire/Storefront/Homepage.php` | Product grid + cart, session-backed |
-| `app/Livewire/Storefront/Checkout.php` | Form → atomic multi-item sale → order |
-| `app/Mail/OrderReceipt.php` | Queued receipt email |
-| `resources/views/livewire/storefront/*.blade.php` | The two page views |
-| `resources/views/emails/order-receipt.blade.php` | Plain HTML receipt |
-| `routes/web.php` | **Replaces** your whole file — see below |
+<!--
+  Add 2-3 screenshots or a short GIF here before publishing — e.g. the
+  Storefront cart, the Admin table with a live stock update, and the POS
+  register. A GIF showing a POS sale updating the Admin tab live is the
+  single most convincing thing you can put at the top of this README.
+-->
 
-## `routes/web.php` is a full replacement this time
+## Why this exists
 
-Unlike the Admin pass, this one changes the `/` route itself (welcome page →
-storefront homepage), so it's simplest to replace the whole file rather than
-patch it. It already includes the admin route from Pass 2.
+This started as a self-directed exercise in building the kind of system a
+retail business actually needs: one inventory, multiple sales channels,
+no overselling, no manual reconciliation. It deliberately avoids the
+"todo app with a database" trap — the interesting part is the concurrency
+and real-time sync, not the CRUD.
 
-## Queue + mail setup (new this pass)
+## Features
 
-The receipt email is queued (`implements ShouldQueue`) so checkout doesn't
-sit waiting on SMTP. Two `.env` settings matter:
+- **Live inventory sync** — a sale anywhere (online, POS, or an admin
+  edit) broadcasts instantly to every other open screen via WebSockets.
+- **Overselling is structurally impossible** — every stock-changing action
+  funnels through one row-locked database transaction
+  (`Product::sell()`), regardless of which channel triggered it.
+- **Admin Dashboard** — searchable, inline-editable product table with
+  soft-delete/restore.
+- **Storefront** — product grid, session-backed cart, checkout, and a
+  queued receipt email.
+- **POS Terminal** — category browsing, a numeric keypad for quantities, a
+  barcode-scanner input parser, a "Quick Product Lookup" modal, and a live
+  toast + sound when an online order comes in mid-shift.
+- **Daily Sales Summary** — combined online + POS revenue, updating live
+  as sales happen on either channel.
+- **Role-based auth** — admin vs. cashier accounts; the storefront stays
+  fully public.
 
+## How the sync actually works
+
+Product::sell() / restock() / admin edit
+│
+▼
+ProductObserver detects the change
+│
+▼
+event(new StockUpdated($product))
+│
+▼
+Broadcast on Reverb (WebSocket server)
+│
+┌──────────┼──────────┐
+▼ ▼ ▼
+Storefront Admin POS
+(Livewire) (Livewire) (Livewire)
+
+
+The key design decision: **every** stock-changing code path — an online
+checkout, a POS sale, or a plain admin edit — goes through the same
+`Product::sell()` / `Product::restock()` methods, which wrap a
+`lockForUpdate()` row lock inside a database transaction. That's what
+makes the "no overselling" guarantee real, not just a happy-path demo: if
+an online sale and a POS sale hit the last unit of the same product at the
+same instant, one of them will cleanly fail with an
+`InsufficientStockException` instead of both succeeding.
+
+Because a Model Observer — not the controllers — is what fires the
+broadcast event, any future code path that touches stock gets the live-sync
+behavior automatically, with no risk of a developer adding a new "sell"
+path and forgetting to wire up the event.
+
+## Tech stack
+
+| Layer | Choice | Why |
+|---|---|---|
+| Backend | Laravel | Eloquent, migrations, queues, broadcasting all built in |
+| Real-time UI | Livewire | Server-driven reactivity without a separate JS framework |
+| WebSockets | Laravel Reverb | First-party, self-hosted, no third-party dependency for the core demo |
+| Ephemeral UI state | Alpine.js | Modal open/close, numeric keypad buffer — ships with Livewire |
+| Legacy input parsing | jQuery | Barcode scanner keystroke buffering, used narrowly and deliberately |
+| Styling | Tailwind CSS | Utility-first, fast to iterate |
+| Database | SQLite (dev) / MySQL-ready | Zero-config for local development |
+
+## Getting started
+
+```bash
+git clone <your-repo-url> unimart
+cd unimart
+composer install
+npm install
+cp .env.example .env
+php artisan key:generate
+composer require laravel/reverb
+php artisan reverb:install
+```
+
+Add to `.env` (or confirm `reverb:install` already added these):
 ```env
+BROADCAST_CONNECTION=reverb
 QUEUE_CONNECTION=database
 MAIL_MAILER=log
 ```
 
-- `QUEUE_CONNECTION=database` — uses the `jobs` table Pass 1 already
-  migrated. (`sync` also works for a quick test — it'll just send inline
-  instead of queuing, which is fine for a demo but defeats the point of
-  Pass 1's queue requirement.)
-- `MAIL_MAILER=log` — writes the email to `storage/logs/laravel.log`
-  instead of actually sending anything, so you can see the receipt content
-  without configuring a real mail provider. Open that log file after
-  checkout to read it.
+```bash
+php artisan migrate
+php artisan db:seed
+```
 
-**You need a 4th terminal now** if using `QUEUE_CONNECTION=database`:
+### Run it — 4 terminals, all left running:
+
+```bash
+php artisan serve
+```
+```bash
+php artisan reverb:start
+```
+```bash
+npm run dev
+```
 ```bash
 php artisan queue:work
 ```
-Leave it running — this is what actually sends (logs) the email a moment
-after checkout completes, not during the request itself.
 
-## Test the full flow
+### Pages
 
-1. `php artisan serve`, `php artisan reverb:start --debug`, `npm run dev`,
-   `php artisan queue:work` — four terminals.
-2. Visit `http://localhost:8000/` — you should see your product(s) instead
-   of the Laravel welcome page now.
-3. Add an item to the cart, watch the sidebar update with no page reload.
-4. Click Checkout, fill the form, place the order.
-5. Confirm: stock dropped by the quantity you bought, `storage/logs/laravel.log`
-   has the receipt email, and **your Admin Dashboard tab (if still open)
-   updates its stock number live** — proving an online sale syncs to admin
-   exactly like the reverse did in Pass 2.
+| Page | URL |
+|---|---|
+| Storefront | `/` |
+| Admin Dashboard | `/admin/products` (admin only) |
+| POS Terminal | `/pos` (admin or cashier) |
+| Login | `/login` |
 
-## The oversell race, demonstrated
+### Test accounts (from the seeder)
 
-Open the homepage in two browser tabs (or one tab + Tinker). Add the same
-last-remaining item to the cart in both, then checkout in one first. The
-second checkout will show the cart error message instead of succeeding —
-`Product::sell()`'s row lock is what causes this exact behavior, live.
+| Role | Email | Password |
+|---|---|---|
+| Admin | admin@unimart.test | password |
+| Cashier | cashier@unimart.test | password |
 
-## What's deliberately deferred
+> These are seed credentials for local evaluation only — rotate them
+> before deploying anywhere public.
 
-- **No real payment gateway** — orders are marked `status: 'paid'`
-  immediately. Wiring in Stripe test mode is a clean follow-up.
-- **No mock shipping API** — the address field is collected but not sent
-  anywhere yet.
-- **Cart survives only as long as the session** — fine for a demo; a real
-  build might persist it per logged-in customer instead.
+## Notable design decisions
 
-## Next pass
+- **Money stored as integer cents** (`price_cents`), not a decimal column —
+  avoids float-rounding bugs some drivers still hit with `decimal` casts.
+  A `price` accessor formats it back to `"12.99"` everywhere above the
+  model layer.
+- **`order_product.product_id` restricts on delete**, combined with
+  soft-deletes on `products` — a deactivated product's historical sales
+  are permanently safe even against an accidental hard delete.
+- **Cashier "Current Sale" cart is in-memory, not session-persisted** —
+  a POS transaction is meant to be short-lived; a reload starting fresh
+  matches how a real register behaves.
 
-POS terminal — the third leg of the Golden Rule triangle.
+## Deliberately out of scope (for now)
+
+- Real payment gateway (orders are marked `paid` immediately — Stripe
+  test mode would be the natural next step)
+- Mock shipping-rate API
+- Camera-based barcode scanning (`BarcodeDetector` API — the SKU-lookup
+  backend already exists, this would just be a new input source)
+- Self-service account registration (staff accounts are provisioned by
+  whoever runs the business, not signed up)
+
+## License
+
+MIT — do whatever you want with it.
