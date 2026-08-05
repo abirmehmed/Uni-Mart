@@ -1,30 +1,35 @@
 <div class="mx-auto mt-16 max-w-sm">
-    <div class="rounded-lg border border-slate-200 bg-white p-6">
-        <h1 class="mb-1 text-lg font-semibold text-slate-900">Sign in</h1>
-        <p class="mb-6 text-sm text-slate-500">Staff access — admin &amp; cashier only.</p>
+    <p class="mb-1 text-center font-mono text-xs uppercase tracking-widest text-amber-dark">Staff access</p>
+    <h1 class="mb-8 text-center font-display text-3xl font-bold uppercase tracking-tight text-ink">Sign in</h1>
 
-        <form wire:submit="authenticate" class="space-y-4">
+    <div class="border border-ink/10 bg-white">
+        <div class="flex items-center justify-between border-b-2 border-dashed border-ink/15 bg-ink px-5 py-3">
+            <span class="font-mono text-[11px] uppercase tracking-widest text-white/60">UniMart</span>
+            <span class="font-mono text-[11px] uppercase tracking-widest text-amber">Admin &middot; Cashier</span>
+        </div>
+
+        <form wire:submit="authenticate" class="space-y-4 p-6">
             <div>
-                <label class="block text-xs font-medium text-slate-500">Email</label>
-                <input type="email" wire:model="email" autofocus class="mt-1 w-full rounded-md border-slate-300 text-sm">
-                @error('email') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+                <label class="font-mono text-[11px] uppercase tracking-wide text-ink/40">Email</label>
+                <input type="email" wire:model="email" autofocus class="mt-1 w-full rounded-sm border-ink/15 text-sm">
+                @error('email') <p class="mt-1 font-mono text-xs text-stamp">{{ $message }}</p> @enderror
             </div>
             <div>
-                <label class="block text-xs font-medium text-slate-500">Password</label>
-                <input type="password" wire:model="password" class="mt-1 w-full rounded-md border-slate-300 text-sm">
-                @error('password') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+                <label class="font-mono text-[11px] uppercase tracking-wide text-ink/40">Password</label>
+                <input type="password" wire:model="password" class="mt-1 w-full rounded-sm border-ink/15 text-sm">
+                @error('password') <p class="mt-1 font-mono text-xs text-stamp">{{ $message }}</p> @enderror
             </div>
-            <label class="flex items-center gap-2 text-xs text-slate-500">
-                <input type="checkbox" wire:model="remember" class="rounded border-slate-300">
+            <label class="flex items-center gap-2 font-mono text-[11px] uppercase tracking-wide text-ink/40">
+                <input type="checkbox" wire:model="remember" class="rounded-sm border-ink/20">
                 Remember me
             </label>
             <button
                 type="submit"
                 wire:loading.attr="disabled"
-                class="w-full rounded-md bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-60"
+                class="w-full rounded-sm bg-ink px-4 py-2.5 font-mono text-xs uppercase tracking-wide text-white hover:bg-amber-dark disabled:opacity-60"
             >
                 <span wire:loading.remove>Sign in</span>
-                <span wire:loading>Signing in...</span>
+                <span wire:loading>Signing in&hellip;</span>
             </button>
         </form>
     </div>
