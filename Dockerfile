@@ -18,7 +18,7 @@ COPY resources ./resources
 RUN npm run build
 
 # ---- Stage 2: PHP app + Reverb + Caddy, one container ----
-FROM php:8.3-cli-alpine
+FROM php:8.4-cli-alpine
 
 RUN apk add --no-cache sqlite sqlite-dev caddy $PHPIZE_DEPS \
     && docker-php-ext-install pdo pdo_sqlite pcntl \
