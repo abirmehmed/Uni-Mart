@@ -1,4 +1,4 @@
-{$PORT} {
+:{$PORT} {
     @realtime path /app/* /apps/*
     reverse_proxy @realtime localhost:6001
 
