@@ -1,7 +1,7 @@
 @props(['quantity'])
 @php
     $inStock = $quantity > 0;
-    $lowStock = $inStock && $quantity < 5;
+    $lowStock = $inStock && $quantity <= 5;
     $critical = ! $inStock || $lowStock;
 @endphp
 <span
