@@ -1,7 +1,7 @@
 <div class="grid grid-cols-1 gap-10 lg:grid-cols-3">
     <div class="lg:col-span-2">
         <span class="mb-3 inline-flex -rotate-2 items-center gap-2 rounded-sm border border-ledger/40 bg-white px-2.5 py-1 font-mono text-[11px] font-medium uppercase tracking-widest text-ledger">
-            <span class="h-1.5 w-1.5 animate-pulse rounded-full border border-current"></span>
+            <span class="relative flex h-1.5 w-1.5"><span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-ledger opacity-75"></span><span class="relative inline-flex h-1.5 w-1.5 rounded-full bg-ledger"></span></span>
             Current inventory — live
         </span>
         <h1 class="mb-8 font-display text-4xl font-bold uppercase tracking-tight text-ink">Shop</h1>
@@ -12,6 +12,7 @@
 
         <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
             @foreach ($products as $product)
+                @php $availableForYou = $product->stock_quantity - ($cart[$product->id] ?? 0); @endphp
                 <div wire:key="product-{{ $product->id }}" class="group relative flex flex-col overflow-hidden border border-ink/10 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-ink/25 hover:shadow-lg hover:shadow-ink/10">
                     <div class="overflow-hidden">
                         @if ($product->image_url)
@@ -22,19 +23,24 @@
                     </div>
 
                     <div class="flex flex-1 flex-col p-4">
-                        <div wire:key="status-{{ $product->id }}-{{ $product->stock_quantity }}" class="mb-2 self-start">
-                            <x-stock-tag :quantity="$product->stock_quantity" />
+                        <div wire:key="status-{{ $product->id }}-{{ $product->stock_quantity }}-{{ $cart[$product->id] ?? 0 }}" class="mb-2 self-start">
+                            <x-stock-tag :quantity="$availableForYou" />
                         </div>
 
                         <h2 class="font-semibold text-ink">{{ $product->name }}</h2>
-                        <p class="mb-4 font-mono text-sm text-ink/50">${{ $product->price }}</p>
+                        <p class="mb-1 font-mono text-sm text-ink/50">${{ $product->price }}</p>
+                        @if (($cart[$product->id] ?? 0) > 0)
+                            <p class="mb-3 font-mono text-[11px] uppercase tracking-wide text-amber-dark">{{ $cart[$product->id] }} in your cart</p>
+                        @else
+                            <div class="mb-3"></div>
+                        @endif
 
                         <button
                             wire:click="addToCart({{ $product->id }})"
-                            @disabled($product->stock_quantity <= 0)
+                            @disabled($availableForYou <= 0)
                             class="mt-auto rounded-sm bg-ink px-3 py-2.5 font-mono text-xs uppercase tracking-widest text-white shadow-sm transition hover:bg-amber-dark disabled:cursor-not-allowed disabled:bg-ink/20 disabled:shadow-none"
                         >
-                            {{ $product->stock_quantity > 0 ? 'Add to cart' : 'Out of stock' }}
+                            {{ $availableForYou > 0 ? 'Add to cart' : 'Out of stock' }}
                         </button>
                     </div>
                 </div>

@@ -4,11 +4,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>UniMart</title>
-
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -30,7 +28,6 @@
             },
         }
     </script>
-
     @livewireStyles
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -41,7 +38,6 @@
                 <a href="{{ route('storefront.home') }}" wire:navigate class="font-display text-xl font-bold uppercase tracking-wide text-ink">
                     UniMart
                 </a>
-
                 @auth
                     @if (auth()->user()->role === 'admin')
                         <a href="{{ route('admin.products') }}" wire:navigate class="font-mono text-xs uppercase tracking-wide text-ink/40 hover:text-ink">Admin</a>
@@ -49,27 +45,26 @@
                     <a href="{{ route('pos.terminal') }}" wire:navigate class="font-mono text-xs uppercase tracking-wide text-ink/40 hover:text-ink">POS</a>
                 @endauth
             </div>
-
-            <div class="flex items-center gap-4 font-mono text-[11px] uppercase tracking-wide text-ink/40">
-                <span>Inventory synced live</span>
+            <div class="flex items-center gap-3">
+                <span class="inline-flex items-center gap-1.5 rounded-sm border border-ledger/30 bg-ledger/5 px-2.5 py-1 font-mono text-[11px] uppercase tracking-wide text-ledger">
+                    <span class="relative flex h-1.5 w-1.5"><span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-ledger opacity-75"></span><span class="relative inline-flex h-1.5 w-1.5 rounded-full bg-ledger"></span></span>
+                    Inventory synced live
+                </span>
                 @auth
-                    <span class="text-ink/20">/</span>
-                    <span>{{ auth()->user()->name }} ({{ auth()->user()->role }})</span>
+                    <span class="font-mono text-[11px] uppercase tracking-wide text-ink/40">{{ auth()->user()->name }} ({{ auth()->user()->role }})</span>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
-                        <button type="submit" class="text-amber-dark hover:text-ink">Log out</button>
+                        <button type="submit" class="rounded-sm border border-ink/15 px-3 py-1.5 font-mono text-[11px] uppercase tracking-wide text-ink/50 transition-colors hover:border-stamp/40 hover:text-stamp">Log out</button>
                     </form>
                 @else
-                    <a href="{{ route('login') }}" wire:navigate class="text-amber-dark hover:text-ink">Staff login</a>
+                    <a href="{{ route('login') }}" wire:navigate class="rounded-sm border border-amber-dark/40 bg-white px-3 py-1.5 font-mono text-[11px] uppercase tracking-wide text-amber-dark transition-colors hover:bg-amber-dark hover:text-white">Staff login</a>
                 @endauth
             </div>
         </div>
     </nav>
-
     <main class="mx-auto max-w-6xl px-6 py-10">
         {{ $slot }}
     </main>
-
     @livewireScripts
 </body>
 </html>
