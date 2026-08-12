@@ -42,8 +42,12 @@
                     <div class="flex items-center gap-1 rounded-sm border border-ink/10 bg-steel/60 p-1">
                         @if (auth()->user()->role === 'admin')
                             <a href="{{ route('admin.products') }}" wire:navigate
-                                class="rounded-sm px-3 py-1 font-mono text-[11px] uppercase tracking-wide transition-colors {{ request()->routeIs('admin.*') ? 'bg-ink text-white shadow-sm' : 'text-ink/50 hover:text-ink' }}">
+                                class="rounded-sm px-3 py-1 font-mono text-[11px] uppercase tracking-wide transition-colors {{ request()->routeIs('admin.products') ? 'bg-ink text-white shadow-sm' : 'text-ink/50 hover:text-ink' }}">
                                 Admin
+                            </a>
+                            <a href="{{ route('admin.reports') }}" wire:navigate
+                                class="rounded-sm px-3 py-1 font-mono text-[11px] uppercase tracking-wide transition-colors {{ request()->routeIs('admin.reports') ? 'bg-ink text-white shadow-sm' : 'text-ink/50 hover:text-ink' }}">
+                                Reports
                             </a>
                         @endif
                         <a href="{{ route('pos.terminal') }}" wire:navigate

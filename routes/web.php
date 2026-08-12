@@ -1,6 +1,7 @@
 <?php
 
 use App\Livewire\Admin\ProductManager;
+use App\Livewire\Admin\Reports;
 use App\Livewire\Auth\Login;
 use App\Livewire\Pos\Terminal;
 use App\Livewire\Storefront\Checkout;
@@ -24,6 +25,10 @@ Route::post('/logout', function () {
 Route::livewire('/admin/products', ProductManager::class)
     ->middleware(['auth', 'role:admin'])
     ->name('admin.products');
+
+Route::livewire('/admin/reports', Reports::class)
+    ->middleware(['auth', 'role:admin'])
+    ->name('admin.reports');
 
 Route::livewire('/pos', Terminal::class)
     ->middleware(['auth', 'role:admin,cashier'])
