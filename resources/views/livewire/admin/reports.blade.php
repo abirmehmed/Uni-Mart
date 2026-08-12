@@ -5,6 +5,85 @@
         <p class="font-mono text-xs text-ink/40">Revenue, profit, and top sellers by day</p>
     </div>
 
+    <div wire:key="chart-{{ $year }}-{{ $month }}" x-data x-init="
+            new Chart($refs.trendCanvas, {
+                type: 'line',
+                data: {
+                    labels: @js(collect($this->monthlyTrend)->pluck('day')),
+                    datasets: [
+                        {
+                            label: 'Revenue',
+                            data: @js(collect($this->monthlyTrend)->pluck('revenue')),
+                            borderColor: '#E8A33D',
+                            backgroundColor: '#E8A33D22',
+                            fill: true,
+                            tension: 0.3,
+                            pointRadius: 2,
+                        },
+                        {
+                            label: 'Profit',
+                            data: @js(collect($this->monthlyTrend)->pluck('profit')),
+                            borderColor: '#4C7A5E',
+                            backgroundColor: '#4C7A5E22',
+                            fill: true,
+                            tension: 0.3,
+                            pointRadius: 2,
+                        },
+                    ],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { font: { family: 'IBM Plex Mono', size: 11 }, color: '#14181A' } },
+                    },
+                    scales: {
+                        x: { ticks: { font: { family: 'IBM Plex Mono', size: 10 } }, grid: { display: false } },
+                        y: { ticks: { font: { family: 'IBM Plex Mono', size: 10 } } },
+                    },
+                },
+            })
+        "
+        class="mb-6 border border-ink/10 bg-white p-5 shadow-lg shadow-ink/5"
+    >
+        <p class="mb-3 font-mono text-[11px] uppercase tracking-widest text-ink/40">Revenue &amp; profit this month</p>
+        <div style="height: 220px;">
+            <canvas x-ref="trendCanvas"></canvas>
+        </div>
+    </div>
+
+    <div wire:key="products-chart-{{ $year }}-{{ $month }}" x-data x-init="
+            new Chart($refs.productsCanvas, {
+                type: 'bar',
+                data: {
+                    labels: @js(array_keys($this->productsSoldThisMonth)),
+                    datasets: [{
+                        label: 'Units sold',
+                        data: @js(array_values($this->productsSoldThisMonth)),
+                        backgroundColor: '#C97F1F',
+                        borderRadius: 2,
+                    }],
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { ticks: { font: { family: 'IBM Plex Mono', size: 10 } } },
+                        y: { ticks: { font: { family: 'IBM Plex Mono', size: 10 } }, grid: { display: false } },
+                    },
+                },
+            })
+        "
+        class="mb-6 border border-ink/10 bg-white p-5 shadow-lg shadow-ink/5"
+    >
+        <p class="mb-3 font-mono text-[11px] uppercase tracking-widest text-ink/40">Top products this month (units sold)</p>
+        <div style="height: 260px;">
+            <canvas x-ref="productsCanvas"></canvas>
+        </div>
+    </div>
+
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-5">
         <div class="lg:col-span-3 border border-ink/10 bg-white shadow-lg shadow-ink/5">
             <div class="flex items-center justify-between border-b-2 border-dashed border-ink/15 bg-ink px-5 py-3">

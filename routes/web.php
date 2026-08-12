@@ -6,10 +6,12 @@ use App\Livewire\Auth\Login;
 use App\Livewire\Pos\Terminal;
 use App\Livewire\Storefront\Checkout;
 use App\Livewire\Storefront\Homepage;
+use App\Livewire\Storefront\ProductShow;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::livewire('/', Homepage::class)->name('storefront.home');
+Route::livewire('/products/{product}', ProductShow::class)->name('storefront.product');
 Route::livewire('/checkout', Checkout::class)->name('storefront.checkout');
 
 Route::livewire('/login', Login::class)->name('login');

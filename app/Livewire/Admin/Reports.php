@@ -138,6 +138,75 @@ class Reports extends Component
         ];
     }
 
+    /**
+     * Daily revenue + profit across the whole visible month, for the trend
+     * chart. Same current-cost-vs-historical-quantity caveat as
+     * selectedDaySummary() applies here.
+     */
+    #[Computed]
+    public function monthlyTrend(): array
+    {
+        $start = Carbon::create($this->year, $this->month, 1)->startOfDay();
+        $end = $start->copy()->endOfMonth()->endOfDay();
+
+        $orders = Order::query()
+            ->where('status', 'paid')
+            ->whereBetween('created_at', [$start, $end])
+            ->with('products')
+            ->get()
+            ->groupBy(fn (Order $order) => $order->created_at->day);
+
+        $trend = [];
+
+        for ($day = 1; $day <= $start->daysInMonth; $day++) {
+            $dayOrders = $orders->get($day, collect());
+            $revenueCents = $dayOrders->sum('total_price_cents');
+
+            $costCents = 0;
+            foreach ($dayOrders as $order) {
+                foreach ($order->products as $product) {
+                    $costCents += $product->cost_cents * $product->pivot->quantity;
+                }
+            }
+
+            $trend[] = [
+                'day' => $day,
+                'revenue' => round($revenueCents / 100, 2),
+                'profit' => round(($revenueCents - $costCents) / 100, 2),
+            ];
+        }
+
+        return $trend;
+    }
+
+    /**
+     * Total units sold per product across the visible month, for the
+     * "top products" bar chart. Top 10 by quantity.
+     */
+    #[Computed]
+    public function productsSoldThisMonth(): array
+    {
+        $start = Carbon::create($this->year, $this->month, 1)->startOfDay();
+        $end = $start->copy()->endOfMonth()->endOfDay();
+
+        $quantities = [];
+
+        Order::query()
+            ->where('status', 'paid')
+            ->whereBetween('created_at', [$start, $end])
+            ->with('products')
+            ->get()
+            ->each(function (Order $order) use (&$quantities) {
+                foreach ($order->products as $product) {
+                    $quantities[$product->name] = ($quantities[$product->name] ?? 0) + $product->pivot->quantity;
+                }
+            });
+
+        arsort($quantities);
+
+        return array_slice($quantities, 0, 10, true);
+    }
+
     #[Computed]
     public function calendarWeeks(): array
     {

@@ -11,7 +11,10 @@
             this.keypadBuffer = '';
         },
         confirmKeypad() {
-            $wire.applyKeypadQuantity(parseInt(this.keypadBuffer || '0', 10));
+            if (this.keypadBuffer === '') {
+                return; // no digits typed — leave quantity as-is, don't zero it out
+            }
+            $wire.applyKeypadQuantity(parseInt(this.keypadBuffer, 10));
             this.keypadBuffer = '';
         },
         showOrderToast(message) {
@@ -74,10 +77,11 @@
 
             <div class="grid flex-1 auto-rows-min grid-cols-3 gap-3 overflow-y-auto p-3">
                 @forelse ($this->products as $product)
+                    @php $available = $this->availableStock($product); @endphp
                     <button
                         wire:click="addToCart({{ $product->id }})"
                         wire:key="pos-product-{{ $product->id }}"
-                        @disabled($product->stock_quantity <= 0)
+                        @disabled($available <= 0)
                         class="flex items-center gap-3 rounded-sm border border-ink/10 p-2 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-amber-dark hover:bg-amber/5 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0 disabled:hover:shadow-sm"
                     >
                         <div class="h-12 w-12 shrink-0 overflow-hidden rounded-sm bg-steel">
@@ -91,10 +95,10 @@
                             <span class="block truncate text-sm font-semibold text-ink">{{ $product->name }}</span>
                             <span class="font-mono text-xs text-ink/50">${{ $product->price }}</span>
                             <span
-                                wire:key="pos-stock-{{ $product->id }}-{{ $product->stock_quantity }}"
-                                class="mt-0.5 block font-mono text-[10px] font-medium uppercase tracking-wide {{ $product->stock_quantity > 0 ? 'text-ledger' : 'text-stamp' }}"
+                                wire:key="pos-stock-{{ $product->id }}-{{ $product->stock_quantity }}-{{ $this->cart[$product->id] ?? 0 }}"
+                                class="mt-0.5 block font-mono text-[10px] font-medium uppercase tracking-wide {{ $available > 0 ? 'text-ledger' : 'text-stamp' }}"
                             >
-                                {{ $product->stock_quantity > 0 ? $product->stock_quantity.' in stock' : 'out of stock' }}
+                                {{ $available > 0 ? $available.' in stock' : 'out of stock' }}
                             </span>
                         </div>
                     </button>
@@ -152,7 +156,7 @@
                         <span class="text-sm font-semibold text-ink" x-text="keypadBuffer || '&mdash;'"></span>
                     </div>
                     <div class="grid grid-cols-3 gap-2">
-                        @foreach ([1,2,3,4,5,6,7,8,9] as $digit)
+                        @foreach ([7,8,9,4,5,6,1,2,3] as $digit)
                             <button
                                 @click="pressKey('{{ $digit }}')"
                                 :disabled="{{ $activeLineProductId ? 'false' : 'true' }}"

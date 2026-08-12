@@ -92,6 +92,16 @@ class Terminal extends Component
         return $this->cartItems->sum('subtotal_cents');
     }
 
+    /**
+     * Real stock minus whatever's currently sitting in this sale — display
+     * only. Actual stock_quantity is untouched until payAndComplete() runs
+     * Product::sell(), same as the storefront's per-user available count.
+     */
+    public function availableStock(Product $product): int
+    {
+        return $product->stock_quantity - ($this->cart[$product->id] ?? 0);
+    }
+
     public function selectCategory(?string $category): void
     {
         $this->selectedCategory = $category;

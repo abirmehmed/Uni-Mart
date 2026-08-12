@@ -14,20 +14,22 @@
             @foreach ($products as $product)
                 @php $availableForYou = $product->stock_quantity - ($cart[$product->id] ?? 0); @endphp
                 <div wire:key="product-{{ $product->id }}" class="group relative flex flex-col overflow-hidden border border-ink/10 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-ink/25 hover:shadow-lg hover:shadow-ink/10">
-                    <div class="overflow-hidden">
+                    <a href="{{ route('storefront.product', $product) }}" wire:navigate class="overflow-hidden">
                         @if ($product->image_url)
                             <img src="{{ $product->image_url }}" alt="{{ $product->name }}" class="aspect-square w-full object-cover transition-transform duration-300 group-hover:scale-105">
                         @else
                             <div class="flex aspect-square w-full items-center justify-center bg-steel font-mono text-[10px] uppercase tracking-wide text-ink/30">No image</div>
                         @endif
-                    </div>
+                    </a>
 
                     <div class="flex flex-1 flex-col p-4">
                         <div wire:key="status-{{ $product->id }}-{{ $product->stock_quantity }}-{{ $cart[$product->id] ?? 0 }}" class="mb-2 self-start">
                             <x-stock-tag :quantity="$availableForYou" />
                         </div>
 
-                        <h2 class="font-semibold text-ink">{{ $product->name }}</h2>
+                        <a href="{{ route('storefront.product', $product) }}" wire:navigate>
+                            <h2 class="font-semibold text-ink hover:text-amber-dark">{{ $product->name }}</h2>
+                        </a>
                         <p class="mb-1 font-mono text-sm text-ink/50">${{ $product->price }}</p>
                         @if (($cart[$product->id] ?? 0) > 0)
                             <p class="mb-3 font-mono text-[11px] uppercase tracking-wide text-amber-dark">{{ $cart[$product->id] }} in your cart</p>

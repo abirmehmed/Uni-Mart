@@ -23,7 +23,7 @@ class DemoOrderSeeder extends Seeder
             return;
         }
 
-        $daysBack = 21;
+        $daysBack = 60;
 
         for ($i = 0; $i < $daysBack; $i++) {
             $date = Carbon::now()->subDays($i);
