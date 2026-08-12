@@ -34,15 +34,23 @@
 <body class="bg-steel font-sans text-ink antialiased">
     <nav class="border-b border-ink/10 bg-white">
         <div class="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-            <div class="flex items-center gap-6">
+            <div class="flex items-center gap-4">
                 <a href="{{ route('storefront.home') }}" wire:navigate class="font-display text-xl font-bold uppercase tracking-wide text-ink">
                     UniMart
                 </a>
                 @auth
-                    @if (auth()->user()->role === 'admin')
-                        <a href="{{ route('admin.products') }}" wire:navigate class="font-mono text-xs uppercase tracking-wide text-ink/40 hover:text-ink">Admin</a>
-                    @endif
-                    <a href="{{ route('pos.terminal') }}" wire:navigate class="font-mono text-xs uppercase tracking-wide text-ink/40 hover:text-ink">POS</a>
+                    <div class="flex items-center gap-1 rounded-sm border border-ink/10 bg-steel/60 p-1">
+                        @if (auth()->user()->role === 'admin')
+                            <a href="{{ route('admin.products') }}" wire:navigate
+                                class="rounded-sm px-3 py-1 font-mono text-[11px] uppercase tracking-wide transition-colors {{ request()->routeIs('admin.*') ? 'bg-ink text-white shadow-sm' : 'text-ink/50 hover:text-ink' }}">
+                                Admin
+                            </a>
+                        @endif
+                        <a href="{{ route('pos.terminal') }}" wire:navigate
+                            class="rounded-sm px-3 py-1 font-mono text-[11px] uppercase tracking-wide transition-colors {{ request()->routeIs('pos.*') ? 'bg-ink text-white shadow-sm' : 'text-ink/50 hover:text-ink' }}">
+                            POS
+                        </a>
+                    </div>
                 @endauth
             </div>
             <div class="flex items-center gap-3">
@@ -54,7 +62,7 @@
                     <span class="font-mono text-[11px] uppercase tracking-wide text-ink/40">{{ auth()->user()->name }} ({{ auth()->user()->role }})</span>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
-                        <button type="submit" class="rounded-sm border border-ink/15 px-3 py-1.5 font-mono text-[11px] uppercase tracking-wide text-ink/50 transition-colors hover:border-stamp/40 hover:text-stamp">Log out</button>
+                        <button type="submit" class="rounded-sm border border-stamp/30 bg-stamp/5 px-3 py-1.5 font-mono text-[11px] uppercase tracking-wide text-stamp transition-colors hover:bg-stamp hover:text-white">Log out</button>
                     </form>
                 @else
                     <a href="{{ route('login') }}" wire:navigate class="rounded-sm border border-amber-dark/40 bg-white px-3 py-1.5 font-mono text-[11px] uppercase tracking-wide text-amber-dark transition-colors hover:bg-amber-dark hover:text-white">Staff login</a>

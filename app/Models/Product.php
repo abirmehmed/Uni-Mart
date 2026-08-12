@@ -14,16 +14,17 @@ class Product extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'name', 'sku', 'category', 'price_cents', 'stock_quantity', 'image_url', 'is_active',
+        'name', 'sku', 'category', 'price_cents', 'cost_cents', 'stock_quantity', 'image_url', 'is_active',
     ];
 
     protected $casts = [
         'price_cents' => 'integer',
+        'cost_cents' => 'integer',
         'stock_quantity' => 'integer',
         'is_active' => 'boolean',
     ];
 
-    protected $appends = ['price', 'stock_status'];
+    protected $appends = ['price', 'cost', 'stock_status'];
 
     public function orders(): BelongsToMany
     {
@@ -36,6 +37,11 @@ class Product extends Model
     public function getPriceAttribute(): string
     {
         return number_format($this->price_cents / 100, 2);
+    }
+
+    public function getCostAttribute(): string
+    {
+        return number_format($this->cost_cents / 100, 2);
     }
 
     public function getStockStatusAttribute(): string
