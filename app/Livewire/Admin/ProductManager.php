@@ -17,13 +17,13 @@ class ProductManager extends Component
     public ?int $editingId = null;
 
     public array $editForm = [
-        'name' => '', 'category' => '', 'price' => '', 'cost' => '', 'stock_quantity' => '',
+        'name' => '', 'category' => '', 'description' => '', 'price' => '', 'cost' => '', 'stock_quantity' => '',
     ];
 
     public bool $showCreateForm = false;
 
     public array $createForm = [
-        'name' => '', 'sku' => '', 'category' => '', 'price' => '', 'cost' => '', 'stock_quantity' => 0, 'image_url' => '',
+        'name' => '', 'sku' => '', 'category' => '', 'description' => '', 'price' => '', 'cost' => '', 'stock_quantity' => 0, 'image_url' => '',
     ];
 
     public function updatingSearch(): void
@@ -45,6 +45,7 @@ class ProductManager extends Component
         $this->editForm = [
             'name' => $product->name,
             'category' => $product->category,
+            'description' => $product->description,
             'price' => $product->price,
             'cost' => $product->cost,
             'stock_quantity' => $product->stock_quantity,
@@ -62,6 +63,7 @@ class ProductManager extends Component
         $this->validate([
             'editForm.name' => 'required|string|max:255',
             'editForm.category' => 'nullable|string|max:255',
+            'editForm.description' => 'nullable|string|max:2000',
             'editForm.price' => 'required|numeric|min:0',
             'editForm.cost' => 'nullable|numeric|min:0',
             'editForm.stock_quantity' => 'required|integer|min:0',
@@ -72,6 +74,7 @@ class ProductManager extends Component
         $product->update([
             'name' => $this->editForm['name'],
             'category' => $this->editForm['category'],
+            'description' => $this->editForm['description'] ?: null,
             'price_cents' => (int) round(((float) $this->editForm['price']) * 100),
             'cost_cents' => (int) round(((float) ($this->editForm['cost'] ?: 0)) * 100),
             'stock_quantity' => $this->editForm['stock_quantity'],
@@ -87,6 +90,7 @@ class ProductManager extends Component
             'createForm.name' => 'required|string|max:255',
             'createForm.sku' => 'required|string|max:255|unique:products,sku',
             'createForm.category' => 'nullable|string|max:255',
+            'createForm.description' => 'nullable|string|max:2000',
             'createForm.price' => 'required|numeric|min:0',
             'createForm.cost' => 'nullable|numeric|min:0',
             'createForm.stock_quantity' => 'required|integer|min:0',
@@ -97,6 +101,7 @@ class ProductManager extends Component
             'name' => $this->createForm['name'],
             'sku' => $this->createForm['sku'],
             'category' => $this->createForm['category'] ?: null,
+            'description' => $this->createForm['description'] ?: null,
             'price_cents' => (int) round(((float) $this->createForm['price']) * 100),
             'cost_cents' => (int) round(((float) ($this->createForm['cost'] ?: 0)) * 100),
             'stock_quantity' => $this->createForm['stock_quantity'],

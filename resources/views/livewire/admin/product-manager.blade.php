@@ -57,6 +57,11 @@
                     @error('createForm.stock_quantity') <p class="mt-1 font-mono text-xs text-stamp">{{ $message }}</p> @enderror
                 </div>
                 <div class="sm:col-span-6">
+                    <label class="font-mono text-[11px] uppercase tracking-wide text-ink/40">Description (optional)</label>
+                    <textarea wire:model="createForm.description" rows="3" class="mt-1.5 w-full rounded-sm border-ink/15 text-sm transition-colors focus:border-amber focus:outline-none focus:ring-2 focus:ring-amber/20"></textarea>
+                    @error('createForm.description') <p class="mt-1 font-mono text-xs text-stamp">{{ $message }}</p> @enderror
+                </div>
+                <div class="sm:col-span-6">
                     <label class="font-mono text-[11px] uppercase tracking-wide text-ink/40">Image URL (optional)</label>
                     <input type="text" wire:model="createForm.image_url" class="mt-1.5 w-full rounded-sm border-ink/15 text-sm transition-colors focus:border-amber focus:outline-none focus:ring-2 focus:ring-amber/20">
                 </div>
@@ -151,6 +156,15 @@
                             </td>
                         @endif
                     </tr>
+                    @if ($editingId === $product->id)
+                        <tr wire:key="desc-{{ $product->id }}" class="border-b border-ink/[0.06] bg-steel/40">
+                            <td colspan="7" class="px-4 py-3">
+                                <label class="font-mono text-[11px] uppercase tracking-wide text-ink/40">Description</label>
+                                <textarea wire:model="editForm.description" rows="2" class="mt-1.5 w-full rounded-sm border-ink/15 text-sm transition-colors focus:border-amber focus:outline-none focus:ring-2 focus:ring-amber/20"></textarea>
+                                @error('editForm.description') <p class="mt-1 font-mono text-xs text-stamp">{{ $message }}</p> @enderror
+                            </td>
+                        </tr>
+                    @endif
                 @empty
                     <tr>
                         <td colspan="7" class="px-4 py-10 text-center font-mono text-sm text-ink/30">No products match "{{ $search }}".</td>
