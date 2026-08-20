@@ -4,6 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>UniMart</title>
+    <link rel="icon" href="{{ asset('favicon.ico') }}">
+    <link rel="apple-touch-icon" href="{{ asset('favicon-180.png') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -36,8 +38,9 @@
     <nav class="border-b border-ink/10 bg-white">
         <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-y-2 px-4 py-3 sm:px-6 sm:py-4">
             <div class="flex items-center gap-3 sm:gap-4">
-                <a href="{{ route('storefront.home') }}" wire:navigate class="font-display text-lg font-bold uppercase tracking-wide text-ink sm:text-xl">
-                    UniMart
+                <a href="{{ route('storefront.home') }}" wire:navigate class="flex items-center gap-2">
+                    <img src="{{ asset('images/nav-icon.png') }}" alt="UniMart" class="h-8 w-auto sm:h-9">
+                    <span class="font-display text-lg font-bold uppercase tracking-wide text-ink sm:text-xl">UniMart</span>
                 </a>
                 @auth
                     <div class="flex items-center gap-1 rounded-sm border border-ink/10 bg-steel/60 p-1">
