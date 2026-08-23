@@ -6,6 +6,10 @@ php artisan reverb:start --host=0.0.0.0 --port=6001 &
 sleep 2
 
 php artisan migrate:fresh --seed --force
+
+if [ "$RUN_DEMO_SEEDER" = "true" ]; then
+    php artisan db:seed --class=DemoOrderSeeder --force
+fi
 php artisan tinker --execute="echo 'Products: ' . App\Models\Product::count() . ', Users: ' . App\Models\User::count() . PHP_EOL;"
 
 php artisan queue:work &
