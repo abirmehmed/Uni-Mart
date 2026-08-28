@@ -22,7 +22,7 @@ class ProductSeeder extends Seeder
             ['name' => 'Sun Hat',                     'sku' => 'APP-001', 'category' => 'Apparel',     'price_cents' => 1599, 'cost_cents' => 700,  'stock_quantity' => 18, 'image' => 'app-001.jpg'],
             ['name' => 'Cotton T-Shirt',              'sku' => 'APP-002', 'category' => 'Apparel',     'price_cents' => 1299, 'cost_cents' => 550,  'stock_quantity' => 30, 'image' => 'app-002.jpg'],
             ['name' => 'Wool Socks',                  'sku' => 'APP-003', 'category' => 'Apparel',     'price_cents' => 699,  'cost_cents' => 250,  'stock_quantity' => 40, 'image' => 'app-003.jpg'],
-            ['name' => 'Notebook - Ruled',            'sku' => 'NB-001',  'category' => 'Stationery',  'price_cents' => 599,  'cost_cents' => 250,  'stock_quantity' => 40, 'image' => null],
+            ['name' => 'Notebook - Ruled',            'sku' => 'NB-001',  'category' => 'Stationery',  'price_cents' => 599,  'cost_cents' => 250,  'stock_quantity' => 40, 'image' => 'nb-001.jpg'],
             ['name' => 'Pencil (pack of 12)',         'sku' => 'STA-001', 'category' => 'Stationery',  'price_cents' => 349,  'cost_cents' => 120,  'stock_quantity' => 45, 'image' => 'sta-001.jpg'],
             ['name' => 'Ballpoint Pen (pack of 5)',   'sku' => 'STA-002', 'category' => 'Stationery',  'price_cents' => 299,  'cost_cents' => 100,  'stock_quantity' => 50, 'image' => 'sta-002.jpg'],
             ['name' => 'Sticker Pack',                'sku' => 'STK-001', 'category' => 'Stationery',  'price_cents' => 399,  'cost_cents' => 150,  'stock_quantity' => 60, 'image' => 'stk-001.jpg'],
