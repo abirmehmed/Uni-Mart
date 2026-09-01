@@ -38,7 +38,7 @@
     <nav class="border-b border-ink/10 bg-white">
         <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-y-2 px-4 py-3 sm:px-6 sm:py-4">
             <div class="flex items-center gap-3 sm:gap-4">
-                <a href="{{ route('storefront.home') }}" wire:navigate class="flex items-center gap-2">
+                <a href="{{ route('storefront.home') }}" wire:navigate class="flex items-center gap-0">
                     <img src="{{ asset('images/nav-icon.png') }}" alt="UniMart" class="h-8 w-auto sm:h-9">
                     <span class="font-display text-lg font-bold uppercase tracking-wide text-ink sm:text-xl">UniMart</span>
                 </a>
