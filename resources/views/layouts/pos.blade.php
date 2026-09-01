@@ -38,7 +38,7 @@
 <body class="bg-steel font-sans text-ink antialiased">
     <div class="pos-shell">
         <div class="flex items-center justify-between border-b border-ink/10 bg-white px-4 py-3">
-            <span class="font-display text-sm font-bold uppercase tracking-widest text-ink">UniMart <span class="text-amber-dark">POS</span></span>
+            <div class="flex items-center gap-1"><img src="{{ asset('images/nav-icon.png') }}" alt="UniMart" class="h-6 w-auto"><span class="font-display text-sm font-bold uppercase tracking-widest text-ink">UniMart <span class="text-amber-dark">POS</span></span></div>
             @auth
                 <div class="flex items-center gap-3">
                     @if (auth()->user()->role === 'admin')
