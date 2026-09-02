@@ -41,7 +41,7 @@
         </div>
     </div>
 
-    <div wire:key="chart-{{ $year }}-{{ $month }}" x-data x-init=""
+    <div wire:key="chart-{{ $year }}-{{ $month }}" x-data x-init="
             new Chart($refs.trendCanvas, {
                 type: 'line',
                 data: {
