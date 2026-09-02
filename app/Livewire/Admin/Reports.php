@@ -139,6 +139,47 @@ class Reports extends Component
     }
 
     /**
+     * Month-level KPIs for the summary strip: total revenue, total profit,
+     * order count, and the single best day. Same current-cost caveat as
+     * elsewhere in this component.
+     */
+    #[Computed]
+    public function monthSummary(): array
+    {
+        $start = Carbon::create($this->year, $this->month, 1)->startOfDay();
+        $end = $start->copy()->endOfMonth()->endOfDay();
+
+        $orders = Order::query()
+            ->where('status', 'paid')
+            ->whereBetween('created_at', [$start, $end])
+            ->with('products')
+            ->get();
+
+        $revenueCents = $orders->sum('total_price_cents');
+
+        $costCents = 0;
+        foreach ($orders as $order) {
+            foreach ($order->products as $product) {
+                $costCents += $product->cost_cents * $product->pivot->quantity;
+            }
+        }
+
+        $byDay = $orders
+            ->groupBy(fn (Order $o) => $o->created_at->toDateString())
+            ->map(fn ($group) => $group->sum('total_price_cents'));
+
+        $bestDayDate = $byDay->sortDesc()->keys()->first();
+
+        return [
+            'revenueCents' => $revenueCents,
+            'profitCents' => $revenueCents - $costCents,
+            'orderCount' => $orders->count(),
+            'bestDayDate' => $bestDayDate,
+            'bestDayCents' => $bestDayDate ? $byDay[$bestDayDate] : 0,
+        ];
+    }
+
+    /**
      * Daily revenue + profit across the whole visible month, for the trend
      * chart. Same current-cost-vs-historical-quantity caveat as
      * selectedDaySummary() applies here.

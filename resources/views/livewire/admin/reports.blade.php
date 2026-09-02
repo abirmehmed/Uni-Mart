@@ -5,7 +5,43 @@
         <p class="font-mono text-xs text-ink/40">Revenue, profit, and top sellers by day</p>
     </div>
 
-    <div wire:key="chart-{{ $year }}-{{ $month }}" x-data x-init="
+    <div wire:key="kpi-{{ $year }}-{{ $month }}" class="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div class="border border-ink/10 bg-white p-4 shadow-lg shadow-ink/5">
+            <p class="mb-1 font-mono text-[10px] uppercase tracking-widest text-ink/40">Revenue this month</p>
+            <p class="font-display text-3xl font-bold text-ink"
+                x-data="{ val: 0 }"
+                x-init="let target = {{ $this->monthSummary['revenueCents'] / 100 }}; let start = null; function step(ts){ if(!start) start = ts; let p = Math.min((ts - start) / 700, 1); val = (target * p).toFixed(2); if (p < 1) requestAnimationFrame(step); } requestAnimationFrame(step)"
+                x-text="'$' + val"
+            ></p>
+        </div>
+        <div class="border border-ledger/30 bg-ledger/5 p-4 shadow-lg shadow-ink/5">
+            <p class="mb-1 font-mono text-[10px] uppercase tracking-widest text-ledger">Profit this month</p>
+            <p class="font-display text-3xl font-bold text-ledger"
+                x-data="{ val: 0 }"
+                x-init="let target = {{ $this->monthSummary['profitCents'] / 100 }}; let start = null; function step(ts){ if(!start) start = ts; let p = Math.min((ts - start) / 700, 1); val = (target * p).toFixed(2); if (p < 1) requestAnimationFrame(step); } requestAnimationFrame(step)"
+                x-text="'$' + val"
+            ></p>
+        </div>
+        <div class="border border-ink/10 bg-white p-4 shadow-lg shadow-ink/5">
+            <p class="mb-1 font-mono text-[10px] uppercase tracking-widest text-ink/40">Orders this month</p>
+            <p class="font-display text-3xl font-bold text-ink"
+                x-data="{ val: 0 }"
+                x-init="let target = {{ $this->monthSummary['orderCount'] }}; let start = null; function step(ts){ if(!start) start = ts; let p = Math.min((ts - start) / 700, 1); val = Math.floor(target * p); if (p < 1) requestAnimationFrame(step); } requestAnimationFrame(step)"
+                x-text="val"
+            ></p>
+        </div>
+        <div class="border border-amber-dark/30 bg-amber/5 p-4 shadow-lg shadow-ink/5">
+            <p class="mb-1 font-mono text-[10px] uppercase tracking-widest text-amber-dark">Best day</p>
+            @if ($this->monthSummary['bestDayDate'])
+                <p class="font-display text-xl font-bold text-ink">${{ number_format($this->monthSummary['bestDayCents'] / 100, 2) }}</p>
+                <p class="font-mono text-[11px] text-ink/50">{{ \Carbon\Carbon::parse($this->monthSummary['bestDayDate'])->format('M j') }}</p>
+            @else
+                <p class="font-display text-xl font-bold text-ink/20">&mdash;</p>
+            @endif
+        </div>
+    </div>
+
+    <div wire:key="chart-{{ $year }}-{{ $month }}" x-data x-init=""
             new Chart($refs.trendCanvas, {
                 type: 'line',
                 data: {
