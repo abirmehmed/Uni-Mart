@@ -41,8 +41,12 @@
         </div>
     </div>
 
-    <div wire:key="chart-{{ $year }}-{{ $month }}" x-data x-init="
-            new Chart($refs.trendCanvas, {
+    <div
+        wire:key="chart-{{ $year }}-{{ $month }}"
+        x-data="{ chart: null }"
+        x-init="
+            if (chart) { chart.destroy(); }
+            chart = new Chart($refs.trendCanvas, {
                 type: 'line',
                 data: {
                     labels: @js(collect($this->monthlyTrend)->pluck('day')),
@@ -74,8 +78,15 @@
                         legend: { labels: { font: { family: 'IBM Plex Mono', size: 11 }, color: '#14181A' } },
                     },
                     scales: {
-                        x: { ticks: { font: { family: 'IBM Plex Mono', size: 10 } }, grid: { display: false } },
-                        y: { ticks: { font: { family: 'IBM Plex Mono', size: 10 } } },
+                        x: {
+                            title: { display: true, text: 'Day of month', font: { family: 'IBM Plex Mono', size: 10 }, color: '#14181A99' },
+                            ticks: { font: { family: 'IBM Plex Mono', size: 10 } },
+                            grid: { display: false },
+                        },
+                        y: {
+                            title: { display: true, text: 'Revenue / Profit (USD)', font: { family: 'IBM Plex Mono', size: 10 }, color: '#14181A99' },
+                            ticks: { font: { family: 'IBM Plex Mono', size: 10 }, callback: (v) => '$' + v },
+                        },
                     },
                 },
             })
@@ -88,8 +99,12 @@
         </div>
     </div>
 
-    <div wire:key="products-chart-{{ $year }}-{{ $month }}" x-data x-init="
-            new Chart($refs.productsCanvas, {
+    <div
+        wire:key="products-chart-{{ $year }}-{{ $month }}"
+        x-data="{ chart: null }"
+        x-init="
+            if (chart) { chart.destroy(); }
+            chart = new Chart($refs.productsCanvas, {
                 type: 'bar',
                 data: {
                     labels: @js(array_keys($this->productsSoldThisMonth)),
@@ -106,7 +121,10 @@
                     maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
                     scales: {
-                        x: { ticks: { font: { family: 'IBM Plex Mono', size: 10 } } },
+                        x: {
+                            title: { display: true, text: 'Units sold', font: { family: 'IBM Plex Mono', size: 10 }, color: '#14181A99' },
+                            ticks: { font: { family: 'IBM Plex Mono', size: 10 } },
+                        },
                         y: { ticks: { font: { family: 'IBM Plex Mono', size: 10 } }, grid: { display: false } },
                     },
                 },
