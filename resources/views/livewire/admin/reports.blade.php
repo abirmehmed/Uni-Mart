@@ -42,11 +42,12 @@
     </div>
 
     <div
+        wire:ignore
         wire:key="chart-{{ $year }}-{{ $month }}"
-        x-data="{ chart: null }"
-        x-init="
-            if (chart) { chart.destroy(); }
-            chart = new Chart($refs.trendCanvas, {
+        x-data
+        x-init="$nextTick(() => {
+            Chart.getChart($refs.trendCanvas)?.destroy();
+            new Chart($refs.trendCanvas, {
                 type: 'line',
                 data: {
                     labels: @js(collect($this->monthlyTrend)->pluck('day')),
@@ -89,8 +90,8 @@
                         },
                     },
                 },
-            })
-        "
+            });
+        })"
         class="mb-6 border border-ink/10 bg-white p-5 shadow-lg shadow-ink/5"
     >
         <p class="mb-3 font-mono text-[11px] uppercase tracking-widest text-ink/40">Revenue &amp; profit this month</p>
@@ -100,11 +101,12 @@
     </div>
 
     <div
+        wire:ignore
         wire:key="products-chart-{{ $year }}-{{ $month }}"
-        x-data="{ chart: null }"
-        x-init="
-            if (chart) { chart.destroy(); }
-            chart = new Chart($refs.productsCanvas, {
+        x-data
+        x-init="$nextTick(() => {
+            Chart.getChart($refs.productsCanvas)?.destroy();
+            new Chart($refs.productsCanvas, {
                 type: 'bar',
                 data: {
                     labels: @js(array_keys($this->productsSoldThisMonth)),
@@ -128,8 +130,8 @@
                         y: { ticks: { font: { family: 'IBM Plex Mono', size: 10 } }, grid: { display: false } },
                     },
                 },
-            })
-        "
+            });
+        })"
         class="mb-6 border border-ink/10 bg-white p-5 shadow-lg shadow-ink/5"
     >
         <p class="mb-3 font-mono text-[11px] uppercase tracking-widest text-ink/40">Top products this month (units sold)</p>
