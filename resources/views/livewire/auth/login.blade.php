@@ -10,6 +10,22 @@
             <span class="font-mono text-[11px] uppercase tracking-widest text-white/60">UniMart</span>
             <span class="font-mono text-[11px] uppercase tracking-widest text-amber">Admin &middot; Cashier</span>
         </div>
+        @if (config('demo.show_login'))
+            <div class="border-b-2 border-dashed border-ink/15 bg-amber/5 px-7 py-4">
+                <p class="mb-3 font-mono text-[10px] uppercase tracking-widest text-amber-dark">Demo accounts &mdash; click to fill</p>
+                <div class="space-y-2 font-mono text-xs">
+                    <button type="button" x-on:click="$wire.set('email', 'admin@unimart.test'); $wire.set('password', 'password')" class="flex w-full items-center justify-between border border-ink/10 bg-white px-3 py-2 text-left transition-colors hover:border-amber">
+                        <span class="text-ink"><span class="block uppercase tracking-wide text-ink/40">Admin</span>admin@unimart.test / password</span>
+                        <span class="text-amber-dark">Fill</span>
+                    </button>
+                    <button type="button" x-on:click="$wire.set('email', 'cashier@unimart.test'); $wire.set('password', 'password')" class="flex w-full items-center justify-between border border-ink/10 bg-white px-3 py-2 text-left transition-colors hover:border-amber">
+                        <span class="text-ink"><span class="block uppercase tracking-wide text-ink/40">Cashier</span>cashier@unimart.test / password</span>
+                        <span class="text-amber-dark">Fill</span>
+                    </button>
+                </div>
+            </div>
+        @endif
+
         <form wire:submit="authenticate" class="space-y-5 p-7">
             <div>
                 <label class="font-mono text-[11px] uppercase tracking-wide text-ink/40">Email</label>
