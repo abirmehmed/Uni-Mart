@@ -157,6 +157,7 @@
                     @endforeach
                 </div>
 
+                @php $maxRevenue = max(1, (int) $this->dailyTotals->max()); @endphp
                 @foreach ($this->calendarWeeks as $week)
                     <div class="mb-1 grid grid-cols-7 gap-1">
                         @foreach ($week as $date)
@@ -164,20 +165,26 @@
                                 <div></div>
                             @else
                                 @php
-                                    $hasRevenue = $this->dailyTotals->has($date);
+                                    $cents = (int) $this->dailyTotals->get($date, 0);
+                                    $ratio = $cents / $maxRevenue;
+                                    $heat = match (true) {
+                                        $cents === 0 => 'bg-ink/[0.04] text-ink/40',
+                                        $ratio < 0.25 => 'bg-amber/20 text-ink/80',
+                                        $ratio < 0.5 => 'bg-amber/40 text-ink',
+                                        $ratio < 0.75 => 'bg-amber/70 text-ink',
+                                        default => 'bg-amber-dark text-white',
+                                    };
                                     $isSelected = $date === $selectedDate;
                                     $isToday = $date === now()->toDateString();
                                 @endphp
                                 <button
                                     wire:click="selectDate('{{ $date }}')"
+                                    title="{{ \Carbon\Carbon::parse($date)->format('M j') }}: ${{ number_format($cents / 100, 2) }}"
                                     class="relative flex aspect-square flex-col items-center justify-center rounded-sm font-mono text-xs transition-colors
-                                        {{ $isSelected ? 'bg-ink text-white shadow-sm' : 'text-ink/70 hover:bg-steel' }}
+                                        {{ $isSelected ? 'bg-ink text-white shadow-sm' : $heat . ' hover:ring-1 hover:ring-ink/30' }}
                                         {{ $isToday && ! $isSelected ? 'ring-1 ring-amber-dark' : '' }}"
                                 >
                                     {{ \Carbon\Carbon::parse($date)->day }}
-                                    @if ($hasRevenue)
-                                        <span class="absolute bottom-1 h-1 w-1 rounded-full {{ $isSelected ? 'bg-amber' : 'bg-ledger' }}"></span>
-                                    @endif
                                 </button>
                             @endif
                         @endforeach
