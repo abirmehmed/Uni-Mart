@@ -150,23 +150,21 @@
             <p class="font-mono text-[11px] text-ink/50">${{ number_format($hm['totalCents'] / 100, 2) }} &middot; {{ $hm['activeDays'] }} active days</p>
         </div>
         <div class="overflow-x-auto pb-2">
-            <div class="inline-block">
-                <div class="mb-1 grid" style="grid-template-columns: repeat({{ count($hm['weeks']) }}, 12px); gap: 3px;">
-                    @foreach ($hm['weeks'] as $i => $week)
-                        <div class="whitespace-nowrap font-mono text-[10px] text-ink/40">{{ $hm['monthLabels'][$i] ?? '' }}</div>
-                    @endforeach
-                </div>
-                <div class="grid" style="grid-auto-flow: column; grid-template-rows: repeat(7, 12px); grid-auto-columns: 12px; gap: 3px;">
-                    @foreach ($hm['weeks'] as $week)
-                        @foreach ($week as $cell)
-                            @if ($cell === null)
-                                <div></div>
-                            @else
-                                <div class="rounded-sm {{ $shades[$cell['level']] }}" title="{{ \Carbon\Carbon::parse($cell['date'])->format('M j, Y') }}: ${{ number_format($cell['cents'] / 100, 2) }}"></div>
-                            @endif
-                        @endforeach
-                    @endforeach
-                </div>
+            <div class="flex items-start gap-4">
+                @foreach ($hm['months'] as $hmMonth)
+                    <div>
+                        <p class="mb-1.5 whitespace-nowrap font-mono text-[10px] uppercase tracking-wide text-ink/40">{{ $hmMonth['label'] }}</p>
+                        <div class="grid" style="grid-auto-flow: column; grid-template-rows: repeat(7, 12px); grid-auto-columns: 12px; gap: 3px;">
+                            @foreach ($hmMonth['cells'] as $cell)
+                                @if ($cell === null)
+                                    <div></div>
+                                @else
+                                    <div class="rounded-sm {{ $shades[$cell['level']] }}" title="{{ \Carbon\Carbon::parse($cell['date'])->format('M j, Y') }}: ${{ number_format($cell['cents'] / 100, 2) }}"></div>
+                                @endif
+                            @endforeach
+                        </div>
+                    </div>
+                @endforeach
             </div>
         </div>
         <div class="mt-2 flex items-center justify-end gap-1 font-mono text-[10px] text-ink/40">

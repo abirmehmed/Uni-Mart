@@ -249,8 +249,9 @@ class Reports extends Component
     }
 
     /**
-     * Last 365 days of paid revenue as GitHub-style week columns (Sun-Sat),
-     * ending today. Cells are null padding or ['date', 'cents', 'level' 0-4].
+     * Last 365 days of paid revenue, split per calendar month (GitHub-style
+     * squares, Sun-Sat rows). Each month: label + flat cell list padded to
+     * whole weeks. Cells are null padding or ['date', 'cents', 'level' 0-4].
      */
     #[Computed]
     public function yearHeatmap(): array
@@ -267,14 +268,28 @@ class Reports extends Component
 
         $max = max(1, (int) $totals->max());
 
-        $cells = array_fill(0, $start->dayOfWeek, null);
+        $months = [];
 
         for ($i = 0; $i < 365; $i++) {
-            $date = $start->copy()->addDays($i)->toDateString();
+            $day = $start->copy()->addDays($i);
+            $key = $day->format('Y-m');
+
+            if (! isset($months[$key])) {
+                $label = $day->format('M');
+                if ($i === 0 || $day->month === 1) {
+                    $label .= " '" . $day->format('y');
+                }
+                $months[$key] = [
+                    'label' => $label,
+                    'cells' => array_fill(0, $day->dayOfWeek, null),
+                ];
+            }
+
+            $date = $day->toDateString();
             $cents = (int) $totals->get($date, 0);
             $ratio = $cents / $max;
 
-            $cells[] = [
+            $months[$key]['cells'][] = [
                 'date' => $date,
                 'cents' => $cents,
                 'level' => match (true) {
@@ -287,26 +302,15 @@ class Reports extends Component
             ];
         }
 
-        while (count($cells) % 7 !== 0) {
-            $cells[] = null;
-        }
-
-        $weeks = array_chunk($cells, 7);
-
-        $monthLabels = [];
-        $prev = null;
-        foreach ($weeks as $i => $week) {
-            $first = collect($week)->first(fn ($c) => $c !== null);
-            $month = Carbon::parse($first['date'])->format('M');
-            if ($month !== $prev) {
-                $monthLabels[$i] = $month;
-                $prev = $month;
+        foreach ($months as &$m) {
+            while (count($m['cells']) % 7 !== 0) {
+                $m['cells'][] = null;
             }
         }
+        unset($m);
 
         return [
-            'weeks' => $weeks,
-            'monthLabels' => $monthLabels,
+            'months' => array_values($months),
             'totalCents' => (int) $totals->sum(),
             'activeDays' => $totals->filter(fn ($c) => $c > 0)->count(),
         ];
