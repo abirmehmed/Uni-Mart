@@ -248,6 +248,70 @@ class Reports extends Component
         return array_slice($quantities, 0, 10, true);
     }
 
+    /**
+     * Last 365 days of paid revenue as GitHub-style week columns (Sun-Sat),
+     * ending today. Cells are null padding or ['date', 'cents', 'level' 0-4].
+     */
+    #[Computed]
+    public function yearHeatmap(): array
+    {
+        $end = now()->startOfDay();
+        $start = $end->copy()->subDays(364);
+
+        $totals = Order::query()
+            ->where('status', 'paid')
+            ->whereBetween('created_at', [$start, $end->copy()->endOfDay()])
+            ->get()
+            ->groupBy(fn (Order $order) => $order->created_at->toDateString())
+            ->map(fn (Collection $orders) => (int) $orders->sum('total_price_cents'));
+
+        $max = max(1, (int) $totals->max());
+
+        $cells = array_fill(0, $start->dayOfWeek, null);
+
+        for ($i = 0; $i < 365; $i++) {
+            $date = $start->copy()->addDays($i)->toDateString();
+            $cents = (int) $totals->get($date, 0);
+            $ratio = $cents / $max;
+
+            $cells[] = [
+                'date' => $date,
+                'cents' => $cents,
+                'level' => match (true) {
+                    $cents === 0 => 0,
+                    $ratio < 0.25 => 1,
+                    $ratio < 0.5 => 2,
+                    $ratio < 0.75 => 3,
+                    default => 4,
+                },
+            ];
+        }
+
+        while (count($cells) % 7 !== 0) {
+            $cells[] = null;
+        }
+
+        $weeks = array_chunk($cells, 7);
+
+        $monthLabels = [];
+        $prev = null;
+        foreach ($weeks as $i => $week) {
+            $first = collect($week)->first(fn ($c) => $c !== null);
+            $month = Carbon::parse($first['date'])->format('M');
+            if ($month !== $prev) {
+                $monthLabels[$i] = $month;
+                $prev = $month;
+            }
+        }
+
+        return [
+            'weeks' => $weeks,
+            'monthLabels' => $monthLabels,
+            'totalCents' => (int) $totals->sum(),
+            'activeDays' => $totals->filter(fn ($c) => $c > 0)->count(),
+        ];
+    }
+
     #[Computed]
     public function calendarWeeks(): array
     {

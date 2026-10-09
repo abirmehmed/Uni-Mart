@@ -140,6 +140,44 @@
         </div>
     </div>
 
+    @php
+        $hm = $this->yearHeatmap;
+        $shades = ['bg-ink/[0.06]', 'bg-amber/25', 'bg-amber/50', 'bg-amber/80', 'bg-amber-dark'];
+    @endphp
+    <div class="mb-6 border border-ink/10 bg-white p-5 shadow-lg shadow-ink/5">
+        <div class="mb-4 flex flex-wrap items-baseline justify-between gap-2">
+            <p class="font-mono text-[11px] uppercase tracking-widest text-ink/40">Revenue &middot; last 365 days</p>
+            <p class="font-mono text-[11px] text-ink/50">${{ number_format($hm['totalCents'] / 100, 2) }} &middot; {{ $hm['activeDays'] }} active days</p>
+        </div>
+        <div class="overflow-x-auto pb-2">
+            <div class="inline-block">
+                <div class="mb-1 grid" style="grid-template-columns: repeat({{ count($hm['weeks']) }}, 12px); gap: 3px;">
+                    @foreach ($hm['weeks'] as $i => $week)
+                        <div class="whitespace-nowrap font-mono text-[10px] text-ink/40">{{ $hm['monthLabels'][$i] ?? '' }}</div>
+                    @endforeach
+                </div>
+                <div class="grid" style="grid-auto-flow: column; grid-template-rows: repeat(7, 12px); grid-auto-columns: 12px; gap: 3px;">
+                    @foreach ($hm['weeks'] as $week)
+                        @foreach ($week as $cell)
+                            @if ($cell === null)
+                                <div></div>
+                            @else
+                                <div class="rounded-sm {{ $shades[$cell['level']] }}" title="{{ \Carbon\Carbon::parse($cell['date'])->format('M j, Y') }}: ${{ number_format($cell['cents'] / 100, 2) }}"></div>
+                            @endif
+                        @endforeach
+                    @endforeach
+                </div>
+            </div>
+        </div>
+        <div class="mt-2 flex items-center justify-end gap-1 font-mono text-[10px] text-ink/40">
+            <span class="mr-1">Less</span>
+            @foreach ($shades as $s)
+                <span class="h-3 w-3 rounded-sm {{ $s }}"></span>
+            @endforeach
+            <span class="ml-1">More</span>
+        </div>
+    </div>
+
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-5">
         <div class="lg:col-span-3 border border-ink/10 bg-white shadow-lg shadow-ink/5">
             <div class="flex items-center justify-between border-b-2 border-dashed border-ink/15 bg-ink px-5 py-3">
@@ -157,7 +195,6 @@
                     @endforeach
                 </div>
 
-                @php $maxRevenue = max(1, (int) $this->dailyTotals->max()); @endphp
                 @foreach ($this->calendarWeeks as $week)
                     <div class="mb-1 grid grid-cols-7 gap-1">
                         @foreach ($week as $date)
@@ -165,26 +202,20 @@
                                 <div></div>
                             @else
                                 @php
-                                    $cents = (int) $this->dailyTotals->get($date, 0);
-                                    $ratio = $cents / $maxRevenue;
-                                    $heat = match (true) {
-                                        $cents === 0 => 'bg-ink/[0.04] text-ink/40',
-                                        $ratio < 0.25 => 'bg-amber/20 text-ink/80',
-                                        $ratio < 0.5 => 'bg-amber/40 text-ink',
-                                        $ratio < 0.75 => 'bg-amber/70 text-ink',
-                                        default => 'bg-amber-dark text-white',
-                                    };
+                                    $hasRevenue = $this->dailyTotals->has($date);
                                     $isSelected = $date === $selectedDate;
                                     $isToday = $date === now()->toDateString();
                                 @endphp
                                 <button
                                     wire:click="selectDate('{{ $date }}')"
-                                    title="{{ \Carbon\Carbon::parse($date)->format('M j') }}: ${{ number_format($cents / 100, 2) }}"
                                     class="relative flex aspect-square flex-col items-center justify-center rounded-sm font-mono text-xs transition-colors
-                                        {{ $isSelected ? 'bg-ink text-white shadow-sm' : $heat . ' hover:ring-1 hover:ring-ink/30' }}
+                                        {{ $isSelected ? 'bg-ink text-white shadow-sm' : 'text-ink/70 hover:bg-steel' }}
                                         {{ $isToday && ! $isSelected ? 'ring-1 ring-amber-dark' : '' }}"
                                 >
                                     {{ \Carbon\Carbon::parse($date)->day }}
+                                    @if ($hasRevenue)
+                                        <span class="absolute bottom-1 h-1 w-1 rounded-full {{ $isSelected ? 'bg-amber' : 'bg-ledger' }}"></span>
+                                    @endif
                                 </button>
                             @endif
                         @endforeach
