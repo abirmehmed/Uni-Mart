@@ -10,6 +10,15 @@
             <div class="mb-4 border border-stamp/30 bg-white px-4 py-3 font-mono text-xs text-stamp shadow-sm">{{ $message }}</div>
         @enderror
 
+        @if ($this->categories->isNotEmpty())
+            <div class="mb-6 flex flex-wrap gap-2">
+                <a href="{{ route('storefront.home') }}" wire:navigate class="rounded-sm px-3 py-1.5 font-mono text-[11px] uppercase tracking-wide transition-colors {{ $category === null ? 'bg-ink text-white shadow-sm' : 'border border-ink/15 bg-white text-ink/50 hover:border-ink/30' }}">All</a>
+                @foreach ($this->categories as $cat)
+                    <a wire:key="cat-{{ $loop->index }}" href="{{ route('storefront.home', ['category' => $cat]) }}" wire:navigate class="rounded-sm px-3 py-1.5 font-mono text-[11px] uppercase tracking-wide transition-colors {{ $category === $cat ? 'bg-ink text-white shadow-sm' : 'border border-ink/15 bg-white text-ink/50 hover:border-ink/30' }}">{{ $cat }}</a>
+                @endforeach
+            </div>
+        @endif
+
         <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
             @foreach ($products as $product)
                 @php $availableForYou = $product->stock_quantity - ($cart[$product->id] ?? 0); @endphp

@@ -6,6 +6,7 @@ use App\Models\Product;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 
 #[Layout('layouts.app')]
@@ -15,6 +16,11 @@ class Homepage extends Component
     // account system in this MVP, so the session IS the cart's identity.
     // Shape: [product_id => quantity]
     public array $cart = [];
+
+    // Selected category, kept in the URL (?category=Grocery) so it survives
+    // pagination and can be bookmarked or shared.
+    #[Url(as: 'category')]
+    public ?string $category = null;
 
     public function mount(): void
     {
@@ -100,12 +106,26 @@ class Homepage extends Component
         return $this->cartItems->sum('subtotal_cents');
     }
 
+    #[Computed]
+    public function categories()
+    {
+        return Product::query()
+            ->where('is_active', true)
+            ->whereNotNull('category')
+            ->distinct()
+            ->orderBy('category')
+            ->pluck('category');
+    }
+
     public function render()
     {
         $products = Product::query()
             ->where('is_active', true)
+            ->when($this->category, fn ($q) => $q->where('category', $this->category))
             ->orderBy('name')
-            ->paginate(12);
+            ->paginate(12)
+            ->withPath(route('storefront.home'))
+            ->appends(array_filter(['category' => $this->category]));
 
         return view('livewire.storefront.homepage', [
             'products' => $products,
