@@ -4,11 +4,22 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>UniMart</title>
+    <meta name="description" content="UniMart: full-stack Laravel retail demo with a live-synced storefront, admin dashboard with sales reports, and POS terminal.">
+    <meta name="theme-color" content="#14181A">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="UniMart">
+    <meta property="og:title" content="UniMart: storefront, admin and POS, synced live">
+    <meta property="og:description" content="Full-stack Laravel + Livewire retail demo. One database, three surfaces, real-time inventory.">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:image" content="{{ asset('favicon-180.png') }}">
+    <meta name="twitter:card" content="summary">
     <link rel="icon" href="{{ asset('favicon.ico') }}">
     <link rel="apple-touch-icon" href="{{ asset('favicon-180.png') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://cdn.tailwindcss.com">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
     <script>

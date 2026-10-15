@@ -23,9 +23,9 @@
             @foreach ($products as $product)
                 @php $availableForYou = $product->stock_quantity - ($cart[$product->id] ?? 0); @endphp
                 <div wire:key="product-{{ $product->id }}" class="group relative flex flex-col overflow-hidden border border-ink/10 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-ink/25 hover:shadow-lg hover:shadow-ink/10">
-                    <a href="{{ route('storefront.product', $product) }}" wire:navigate class="overflow-hidden">
+                    <a href="{{ route('storefront.product', $product) }}" wire:navigate.hover class="overflow-hidden">
                         @if ($product->image_url)
-                            <img src="{{ $product->image_url }}" alt="{{ $product->name }}" class="aspect-square w-full object-cover transition-transform duration-300 group-hover:scale-105">
+                            <img src="{{ $product->image_url }}" alt="{{ $product->name }}" width="800" height="800" decoding="async" {{ $loop->index < 3 ? 'fetchpriority=high' : 'loading=lazy' }} class="aspect-square w-full object-cover transition-transform duration-300 group-hover:scale-105">
                         @else
                             <div class="flex aspect-square w-full items-center justify-center bg-steel font-mono text-[10px] uppercase tracking-wide text-ink/30">No image</div>
                         @endif
@@ -36,7 +36,7 @@
                             <x-stock-tag :quantity="$availableForYou" />
                         </div>
 
-                        <a href="{{ route('storefront.product', $product) }}" wire:navigate>
+                        <a href="{{ route('storefront.product', $product) }}" wire:navigate.hover>
                             <h2 class="font-semibold text-ink hover:text-amber-dark">{{ $product->name }}</h2>
                         </a>
                         <p class="mb-1 font-mono text-sm text-ink/50">${{ $product->price }}</p>
@@ -47,7 +47,7 @@
                         @endif
 
                         <button
-                            wire:click="addToCart({{ $product->id }})"
+                            wire:click="addToCart({{ $product->id }})" wire:loading.attr="disabled" wire:target="addToCart({{ $product->id }})"
                             @disabled($availableForYou <= 0)
                             class="mt-auto rounded-sm bg-ink px-3 py-2.5 font-mono text-xs uppercase tracking-widest text-white shadow-sm transition hover:bg-amber-dark disabled:cursor-not-allowed disabled:bg-ink/20 disabled:shadow-none"
                         >
